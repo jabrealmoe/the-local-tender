@@ -90,4 +90,4 @@ For the best experience without exposing data, we recommend **Integration Path 2
 
 ## Installation
 
-Refer to the [walkthrough.md](file:///Users/jabrealj/.gemini/antigravity/brain/22d5c2b7-69a5-44bb-845f-4401a816d211/walkthrough.md) for detailed deployment steps.
+Refer to the [walkthrough.md](walkthrough.md) for detailed deployment steps.
