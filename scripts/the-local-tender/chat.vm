@@ -1,0 +1,29 @@
+<div id="ai-chat-launcher" class="ai-chat-launcher">
+    <span class="aui-icon aui-icon-small aui-iconfont-comment">AI Assistant</span>
+</div>
+
+<div id="ai-chat-container" class="ai-chat-container" data-issue-key="$issue.key" data-user-name="$user.name">
+    <div class="ai-chat-header">
+        <h3>AI Assistant</h3>
+        <button id="ai-chat-close" class="ai-chat-close">&times;</button>
+    </div>
+    <div id="ai-chat-messages" class="ai-chat-messages">
+        <div class="message ai">
+            <div class="bubble">Hello! I'm your Jira AI assistant. How can I help you with issue $issue.key today?</div>
+        </div>
+    </div>
+    <div class="ai-chat-typing" id="ai-chat-typing" style="display: none;">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div class="ai-chat-input-area">
+        <textarea id="ai-chat-input" placeholder="Type a message..." rows="1"></textarea>
+        <button id="ai-chat-send" class="aui-button aui-button-primary">
+            <span class="aui-icon aui-icon-small aui-iconfont-send">Send</span>
+        </button>
+    </div>
+</div>
+
+<link rel="stylesheet" href="/download/resources/com.onresolve.jira.groovy.groovyrunner:scripts/the-local-tender/chat.css" type="text/css" />
+<script src="/download/resources/com.onresolve.jira.groovy.groovyrunner:scripts/the-local-tender/chat.js" type="text/javascript"></script>
