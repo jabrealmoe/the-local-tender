@@ -22,8 +22,7 @@ def templatePath = "scripts/the-local-tender/chat.vm"
 
 try {
     // Note: In ScriptRunner Data Center, the path is relative to the scripts root
-    def writer = new StringWriter()
-    velocityManager.getEncodedBody(templatePath, "", "UTF-8", params)
+    return velocityManager.getEncodedBody(templatePath, "", "UTF-8", params)
 } catch (Exception e) {
     return "Error rendering template: ${e.message}"
 }
