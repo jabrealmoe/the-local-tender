@@ -1,0 +1,51 @@
+services:
+  jira:
+    image: atlassian/jira-software:latest
+    container_name: jira_software
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Memory allocation (Adjust based on your host RAM)
+      - JVM_MINIMUM_MEMORY=2048m
+      - JVM_MAXIMUM_MEMORY=4096m
+      - ATL_DB_DRIVER=org.postgresql.Driver
+      - ATL_DB_TYPE=postgres72
+      - ATL_JDBC_URL=jdbc:postgresql://postgres:5432/jiradb
+      - ATL_JDBC_USER=jira
+      - ATL_JDBC_PASSWORD=secure_password
+    volumes:
+      - jira_data:/var/atlassian/application-data/jira
+      - ./scripts:/var/atlassian/application-data/jira/scripts
+    depends_on:
+      - postgres
+    networks:
+      - jira-net
+
+  postgres:
+    image: postgres:14-alpine
+    container_name: jira_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=jira
+      - POSTGRES_PASSWORD=secure_password
+      - POSTGRES_DB=jiradb
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Tune Postgres for Jira requirements
+    command: >
+      postgres 
+      -c 'max_connections=100'
+      -c 'shared_buffers=128MB' 
+      -c 'synchronous_commit=off'
+    networks:
+      - jira-net
+
+volumes:
+  jira_data:
+  postgres_data:
+
+networks:
+  jira-net:
+    driver: bridge
