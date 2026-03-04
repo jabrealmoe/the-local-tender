@@ -10,10 +10,6 @@
 
 This project provides a modern, floating AI chat assistant for Jira Data Center, implemented via ScriptRunner.
 
-<div align="center">
-  <img src="assets/jira_integration_demo.png" alt="Jira Integration Demo" width="800" />
-  <p><i>The UI integration seamlessly floating over your Jira issues.</i></p>
-</div>
 ## Features
 
 - **Contextual Intelligence**: Automatically includes Jira issue summary and description in prompts.
