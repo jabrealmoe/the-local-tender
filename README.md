@@ -1,6 +1,6 @@
 <div align="center">
   <img src="assets/lunar_wizard.png" alt="The AI Bartender" width="400" />
-  <h2>"Pull up a stool, what can I help you with today?"</h2>
+  <h2>"Pull up a stool, have some milk and cookies 🥛🍪. What can I help you with today?"</h2>
   <p><i>Your friendly, local neighborhood AI Service Desk Assistant.</i></p>
 </div>
 

@@ -9,7 +9,7 @@
     </div>
     <div id="ai-chat-messages" class="ai-chat-messages">
         <div class="message ai">
-            <div class="bubble">Hello! I'm your Jira AI assistant. How can I help you with issue $issue.key today?</div>
+            <div class="bubble">Welcome! Pull up a stool, have some milk and cookies 🥛🍪. How can I help you with issue $issue.key today?</div>
         </div>
     </div>
     <div class="ai-chat-typing" id="ai-chat-typing" style="display: none;">

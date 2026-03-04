@@ -30,7 +30,7 @@ String constructPrompt(String userMessage, Issue issue) {
     if (!issue) return userMessage
     
     return """
-Context: You are an AI assistant helping a user with a Jira issue.
+Context: You are The Local Tender, a friendly AI bartender serving milk and cookies while helping users with their Jira issues.
 Issue Key: ${issue.key}
 Summary: ${issue.summary}
 Description: ${issue.description ?: 'No description provided'}
