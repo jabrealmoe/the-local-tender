@@ -11,7 +11,8 @@ if (!currentIssue) {
 // Explicitly declare as Map<String, Object> to satisfy static type checker
 Map<String, Object> params = [
     "issue": currentIssue,
-    "user" : ComponentAccessor.jiraAuthenticationContext.loggedInUser
+    "user" : ComponentAccessor.jiraAuthenticationContext.loggedInUser,
+    "actionUrl": "http://localhost:11434/api/generate"
 ]
 
 def velocityManager = ComponentAccessor.getComponent(VelocityManager)
