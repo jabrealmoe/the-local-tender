@@ -8,11 +8,17 @@ if (!currentIssue) {
     return "Issue context not found in bindings"
 }
 
+def scriptRoot = "/var/atlassian/application-data/jira/scripts/the-local-tender"
+def cssHtml = new File("${scriptRoot}/chat.css").text
+def jsHtml = new File("${scriptRoot}/chat.js").text
+
 // Explicitly declare as Map<String, Object> to satisfy static type checker
 Map<String, Object> params = [
     "issue": currentIssue,
     "user" : ComponentAccessor.jiraAuthenticationContext.loggedInUser,
-    "actionUrl": "http://localhost:11434/api/generate"
+    "actionUrl": "http://localhost:11434/api/generate",
+    "cssContent": cssHtml,
+    "jsContent": jsHtml
 ]
 
 def velocityManager = ComponentAccessor.getComponent(VelocityManager)

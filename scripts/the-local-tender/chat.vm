@@ -13,5 +13,9 @@
     </div>
 </div>
 
-<link rel="stylesheet" href="/download/resources/com.onresolve.jira.groovy.groovyrunner:scripts/the-local-tender/chat.css" type="text/css" />
-<script src="/download/resources/com.onresolve.jira.groovy.groovyrunner:scripts/the-local-tender/chat.js" type="text/javascript"></script>
+<style>
+${cssContent}
+</style>
+<script>
+${jsContent}
+</script>
