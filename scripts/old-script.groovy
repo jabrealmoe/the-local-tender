@@ -76,7 +76,7 @@ writer.write("""
   const ISSUE_KEY      = "${issueKey}";
   const ACTION_URL     = "${ACTION_URL}";
   const OPENAI_API_KEY = "${OPENAI_API_KEY}";
-  const MODEL          = "gpt-5.3-codex";
+  const MODEL          = "gpt-4o";
   const STORAGE_KEY    = "jira-ai-chat-" + ISSUE_KEY;
   const MAX_MSGS       = 50;
   const MAX_PROMPT     = 1000;
