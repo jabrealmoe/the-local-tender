@@ -6,7 +6,6 @@ services:
     ports:
       - "8080:8080"
     environment:
-      # Memory allocation (Adjust based on your host RAM)
       - JVM_MINIMUM_MEMORY=2048m
       - JVM_MAXIMUM_MEMORY=4096m
       - ATL_DB_DRIVER=org.postgresql.Driver
@@ -14,7 +13,6 @@ services:
       - ATL_JDBC_URL=jdbc:postgresql://postgres:5432/jiradb
       - ATL_JDBC_USER=jira
       - ATL_JDBC_PASSWORD=secure_password
-      # Disable UPM signature checks for local development with empty truststore
       - JVM_SUPPORT_RECOMMENDED_ARGS=-Datlassian.upm.signature.check.disabled=true
     volumes:
       - jira_data:/var/atlassian/application-data/jira
@@ -35,18 +33,42 @@ services:
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # Tune Postgres for Jira requirements
     command: >
-      postgres 
+      postgres
       -c 'max_connections=100'
-      -c 'shared_buffers=128MB' 
+      -c 'shared_buffers=128MB'
       -c 'synchronous_commit=off'
+    networks:
+      - jira-net
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+      - N8N_SECURE_COOKIE=false
+      # Persist encryption key so credentials survive container restarts
+      - N8N_ENCRYPTION_KEY=change_me_to_a_random_secret
+      # Optional: set basic auth to protect the UI
+      # - N8N_BASIC_AUTH_ACTIVE=true
+      # - N8N_BASIC_AUTH_USER=admin
+      # - N8N_BASIC_AUTH_PASSWORD=your_password
+    volumes:
+      - n8n_data:/home/node/.n8n
     networks:
       - jira-net
 
 volumes:
   jira_data:
   postgres_data:
+  n8n_data:
 
 networks:
   jira-net:
