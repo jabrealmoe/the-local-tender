@@ -1,0 +1,910 @@
+{
+  "name": "jira_agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "906b8769-9da4-4e50-86eb-ac5130c6b610",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -976,
+        -448
+      ],
+      "id": "39db777d-73a4-42b7-a360-38d7735a2d84",
+      "name": "Webhook",
+      "webhookId": "906b8769-9da4-4e50-86eb-ac5130c6b610"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.prompt }}\n\nCurrent issue context: {{ JSON.stringify($json.body.issueContext) }}\n\nChat history: {{ JSON.stringify($json.body.history) }}",
+        "options": {
+          "systemMessage": "You are a Jira and Jira Service Management (JSM) expert assistant embedded in a Jira issue panel.\n\nCORE JIRA CAPABILITIES:\n- Get details of any issue (Get Issue)\n- Create standard issues: Task, Bug, Story, Epic (Create Issue)\n- Create subtasks with a required parent issue key (Create Subtask)\n- Update existing issues: summary, description, priority, assignee (Update Issue)\n- Add comments to issues (Add Comment)\n- Search issues using JQL (Search Issues JQL)\n- Get/list project information (Get Project, List All Projects)\n- Get available workflow transitions (Get Transitions)\n- Move issue to new status (Transition Issue)\n- Get project statuses and issue types (Get Project Statuses)\n\nJSM-SPECIFIC CAPABILITIES:\n- List all JSM service desks (List Service Desks)\n- Get queues for a service desk (Get Queues)\n- Get issues in a specific queue (Get Queue Issues)\n- Get customer requests/tickets (Get Customer Requests)\n- Create a new customer service request (Create Service Request)\n- Get request types available in a service desk (Get Request Types)\n- Get SLA information for an issue (Get Issue SLA)\n- Get organizations linked to a service desk (Get Organizations)\n- Get participants on a service request (Get Request Participants)\n\nTOOL ROUTING RULES:\n- Use Create Subtask (never Create Issue) when the user asks for a subtask — it requires a parentKey\n- Use Create Issue for Task, Bug, Story, Epic\n- Use JSM tools when the user asks about queues, SLAs, service desks, request types, or organizations\n- Default issue key comes from the current issue context unless the user specifies otherwise\n\nAlways be concise and actionable. Format responses with bullet points for field lists. Confirm ambiguous fields before acting on create/update operations."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -576,
+        -448
+      ],
+      "id": "cf57c7e8-8a4a-43ad-a5ae-e1313d8bf17c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-20250514",
+          "cachedResultName": "Claude 4 Sonnet"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -784,
+        -48
+      ],
+      "id": "9f98c4f0-6373-4941-8e7b-66acb7089722",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "qWtR6t44mHMBV9n0",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"response\": $json.output } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -176,
+        -448
+      ],
+      "id": "37072ef9-5cf0-41d5-9439-42195dd5a7df",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "url": "=http://jira:8080/rest/api/2/issue/{{ $fromAI('issueKey', 'Jira issue key e.g. SAMP-24. Default to current issue context key.') }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -560,
+        128
+      ],
+      "id": "6b0d5cdd-1aec-461b-897a-6d3e23759133",
+      "name": "Get Issue"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://jira:8080/rest/api/2/issue",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"fields\": {\n    \"project\":   { \"key\": \"{{ $fromAI('projectKey', 'Project key e.g. SAMP') }}\" },\n    \"summary\":   \"{{ $fromAI('summary', 'The issue title/summary') }}\",\n    \"issuetype\": { \"name\": \"{{ $fromAI('issueType', 'Issue type: Bug, Task, Story, Epic. Default Task.') }}\" },\n    \"priority\":  { \"name\": \"{{ $fromAI('priority', 'Priority: Highest, High, Medium, Low, Lowest. Default Medium.', 'string', 'Medium') }}\" }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -384,
+        144
+      ],
+      "id": "4e2e3f0e-8079-479f-91dc-b2838c4c2418",
+      "name": "Create Issue"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://jira:8080/rest/api/2/issue",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"fields\": {\n    \"project\":   { \"key\": \"{{ $fromAI('projectKey', 'Project key e.g. SAMP') }}\" },\n    \"parent\":    { \"key\": \"{{ $fromAI('parentKey', 'Parent issue key e.g. SAMP-24. Required.') }}\" },\n    \"summary\":   \"{{ $fromAI('summary', 'Subtask summary/title') }}\",\n    \"issuetype\": { \"name\": \"Sub-task\" },\n    \"priority\":  { \"name\": \"{{ $fromAI('priority', 'Priority: Highest, High, Medium, Low, Lowest. Default Medium.', 'string', 'Medium') }}\" }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -176,
+        144
+      ],
+      "id": "fc1f47cb-3219-4daa-861d-0524c5b5cc91",
+      "name": "Create Subtask"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=http://jira:8080/rest/api/2/issue/{{ $fromAI('issueKey', 'Jira issue key to update e.g. SAMP-24') }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"fields\": {{ $fromAI('fieldsJson', 'A JSON object of Jira fields to update. Keys: summary, description, priority.name, assignee.name, or any valid field.') }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -576,
+        -48
+      ],
+      "id": "09d58c59-3e33-48e8-99cd-8bbe40570140",
+      "name": "Update Issue"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://jira:8080/rest/api/2/issue/{{ $fromAI('issueKey', 'Jira issue key to comment on e.g. SAMP-24') }}/comment",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "body",
+              "value": "={{ $fromAI('commentBody', 'The text of the comment to add') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -384,
+        -48
+      ],
+      "id": "4bf22544-174c-4b9e-b5bd-8f10075569b1",
+      "name": "Add Comment"
+    },
+    {
+      "parameters": {
+        "url": "=http://jira:8080/rest/api/2/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -176,
+        -48
+      ],
+      "id": "1ce6dc85-4761-4f1d-b0a7-f6174e3f8509",
+      "name": "Search Issues (JQL)"
+    },
+    {
+      "parameters": {
+        "url": "=http://jira:8080/rest/api/2/project/{{ $fromAI('projectKey', 'Project key e.g. SAMP') }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        -48
+      ],
+      "id": "d5e9e119-d8c9-43f3-9ddb-ec83831c459a",
+      "name": "Get Project"
+    },
+    {
+      "parameters": {
+        "url": "http://jira:8080/rest/api/2/project",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        -48
+      ],
+      "id": "a00e1421-15f2-4e74-b486-00f411ba8906",
+      "name": "List All Projects"
+    },
+    {
+      "parameters": {
+        "url": "=http://jira:8080/rest/api/2/issue/{{ $fromAI('issueKey', 'Jira issue key to get transitions for e.g. SAMP-24') }}/transitions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        -48
+      ],
+      "id": "8408ff18-0e47-48da-b6d4-d09ade9453d1",
+      "name": "Get Transitions"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://jira:8080/rest/api/2/issue/{{ $fromAI('issueKey', 'Jira issue key to transition e.g. SAMP-24') }}/transitions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"transition\": {\n    \"id\": \"{{ $fromAI('transitionId', 'Numeric transition ID from Get Transitions e.g. 21') }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        640,
+        -48
+      ],
+      "id": "f666c3ef-c3fc-45bb-84cd-ffbf1a32d1f9",
+      "name": "Transition Issue"
+    },
+    {
+      "parameters": {
+        "url": "=http://jira:8080/rest/api/2/project/{{ $fromAI('projectKey', 'Project key e.g. SAMP') }}/statuses",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        848,
+        -48
+      ],
+      "id": "86c1d37d-7de4-4fda-ac31-8c16d4451eeb",
+      "name": "Get Project Statuses"
+    },
+    {
+      "parameters": {
+        "url": "http://jira:8080/rest/servicedeskapi/servicedesk",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-ExperimentalApi",
+              "value": "opt-in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -560,
+        336
+      ],
+      "id": "e519b97d-cc3e-4020-9de3-4224567c2219",
+      "name": "List Service Desks"
+    },
+    {
+      "parameters": {
+        "url": "=http://jira:8080/rest/servicedeskapi/servicedesk/{{ $fromAI('serviceDeskId', 'The numeric service desk ID e.g. 1. Get from List Service Desks.') }}/queue",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-ExperimentalApi",
+              "value": "opt-in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -384,
+        336
+      ],
+      "id": "0f6cb48f-4a6b-47db-b0f4-3cd1be512d65",
+      "name": "Get Queues"
+    },
+    {
+      "parameters": {
+        "url": "=http://jira:8080/rest/servicedeskapi/servicedesk/{{ $fromAI('serviceDeskId', 'Numeric service desk ID e.g. 1') }}/queue/{{ $fromAI('queueId', 'Numeric queue ID e.g. 10') }}/issue",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-ExperimentalApi",
+              "value": "opt-in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -176,
+        336
+      ],
+      "id": "ac505a80-627d-49a0-b032-74e01ad3e7e6",
+      "name": "Get Queue Issues"
+    },
+    {
+      "parameters": {
+        "url": "=http://jira:8080/rest/servicedeskapi/servicedesk/{{ $fromAI('serviceDeskId', 'Numeric service desk ID e.g. 1') }}/requesttype",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-ExperimentalApi",
+              "value": "opt-in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        336
+      ],
+      "id": "26b6106e-fc81-4920-b511-ad4028243bcf",
+      "name": "Get Request Types"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://jira:8080/rest/servicedeskapi/request",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-ExperimentalApi",
+              "value": "opt-in"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"serviceDeskId\": \"{{ $fromAI('serviceDeskId', 'Numeric service desk ID e.g. 1') }}\",\n  \"requestTypeId\": \"{{ $fromAI('requestTypeId', 'Numeric request type ID from Get Request Types') }}\",\n  \"requestFieldValues\": {{ $fromAI('requestFieldValues', 'JSON object of field values e.g. {\"summary\": \"My request\", \"description\": \"Details\"}') }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        336
+      ],
+      "id": "37279d05-275b-4a06-abfa-b96936fcfd9d",
+      "name": "Create Service Request"
+    },
+    {
+      "parameters": {
+        "url": "=http://jira:8080/rest/servicedeskapi/request/{{ $fromAI('issueKey', 'Jira issue key e.g. SAMP-24') }}/sla",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-ExperimentalApi",
+              "value": "opt-in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        336
+      ],
+      "id": "3236c357-3de0-4e36-8aa5-9900b3968cbb",
+      "name": "Get Issue SLA"
+    },
+    {
+      "parameters": {
+        "url": "=http://jira:8080/rest/servicedeskapi/servicedesk/{{ $fromAI('serviceDeskId', 'Numeric service desk ID e.g. 1') }}/organization",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-ExperimentalApi",
+              "value": "opt-in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        640,
+        336
+      ],
+      "id": "9ac9a744-f753-45b3-b5fd-d65e95ae3ae2",
+      "name": "Get Organizations"
+    },
+    {
+      "parameters": {
+        "url": "=http://jira:8080/rest/servicedeskapi/request/{{ $fromAI('issueKey', 'Jira issue key e.g. SAMP-24') }}/participant",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{JIRA_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-ExperimentalApi",
+              "value": "opt-in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        848,
+        336
+      ],
+      "id": "4c2bf746-fb99-4771-94b0-98c2b6b72011",
+      "name": "Get Request Participants"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Issue": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Issue": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Subtask": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Issue": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Comment": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Issues (JQL)": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Project": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List All Projects": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Transitions": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transition Issue": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Project Statuses": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Service Desks": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Queues": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Queue Issues": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Request Types": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Service Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Issue SLA": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Organizations": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Request Participants": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "495c323e-e6b8-41c9-80e3-5d4d90b2264e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2da090d30702957fe42ee6515e9e025c710408d31a449aecf1a9c0f4aec7558b"
+  },
+  "id": "WlqRH7XErs7iCuNQ",
+  "tags": []
+}
