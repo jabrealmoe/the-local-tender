@@ -32,18 +32,18 @@ writer.write("""
 .ai-message{margin-bottom:12px;}
 .ai-user{text-align:right;}
 .ai-bubble{display:inline-block;padding:8px 12px;border-radius:8px;max-width:75%;font-size:14px;line-height:1.4;word-break:break-word;white-space:pre-wrap;}
-.ai-user .ai-bubble{background:#0052cc;color:white;}
+.ai-user .ai-bubble{background:#00875a;color:white;}
 .ai-bot .ai-bubble{background:#f4f5f7;color:#172b4d;}
 .ai-error .ai-bubble{background:#ffebe6;color:#bf2600;}
 .ai-timestamp{font-size:10px;color:#97a0af;margin-top:2px;display:block;}
-.ai-spinner{display:inline-block;width:14px;height:14px;border:2px solid #c1c7d0;border-top-color:#0052cc;border-radius:50%;animation:ai-spin .7s linear infinite;vertical-align:middle;margin-left:6px;}
+.ai-spinner{display:inline-block;width:14px;height:14px;border:2px solid #c1c7d0;border-top-color:#00875a;border-radius:50%;animation:ai-spin .7s linear infinite;vertical-align:middle;margin-left:6px;}
 @keyframes ai-spin{to{transform:rotate(360deg);}}
 .ai-input-container{display:flex;align-items:flex-end;gap:8px;background:white;border:1px solid #dfe1e6;border-radius:20px;padding:6px 8px;}
 .ai-textarea{flex:1;resize:none;border:none;outline:none;padding:8px;font-size:14px;min-height:24px;max-height:120px;overflow-y:auto;font-family:inherit;}
 
 /* Send button */
-.ai-send-button{width:36px;height:36px;border:none;border-radius:50%;background:#0052cc;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s ease;flex-shrink:0;}
-.ai-send-button:hover{background:#0747a6;transform:scale(1.05);}
+.ai-send-button{width:36px;height:36px;border:none;border-radius:50%;background:#00875a;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s ease;flex-shrink:0;}
+.ai-send-button:hover{background:#006644;transform:scale(1.05);}
 .ai-send-button:disabled{background:#c1c7d0;cursor:not-allowed;transform:none;}
 
 /* Mic button */
@@ -61,14 +61,14 @@ writer.write("""
 .ai-clear-btn{font-size:11px;color:#97a0af;background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;}
 .ai-clear-btn:hover{background:#f4f5f7;color:#172b4d;}
 .ai-empty-state{text-align:center;color:#97a0af;font-size:13px;padding:40px 0;}
-.ai-scope-badge{display:inline-block;font-size:10px;color:#0052cc;background:#deebff;border-radius:3px;padding:2px 6px;margin-bottom:8px;}
+.ai-scope-badge{display:inline-block;font-size:10px;color:#00875a;background:#e3fcef;border-radius:3px;padding:2px 6px;margin-bottom:8px;}
 .ai-mic-status{font-size:10px;color:#de350b;text-align:center;margin-top:4px;min-height:14px;}
 </style>
 
 <div class="ai-container">
 
   <div>
-    <span class="ai-scope-badge">Service Desk Form Agent &mdash; n8n</span>
+    <span class="ai-scope-badge">Issue Concierge Agent</span>
   </div>
 
   <div id="aiChatWindow" class="ai-chat-window">
